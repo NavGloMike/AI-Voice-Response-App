@@ -1,0 +1,6 @@
+name: ai_agents
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - autogen-agentchat~=0.2

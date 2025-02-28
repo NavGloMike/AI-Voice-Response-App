@@ -1,0 +1,36 @@
+
+How to start:
+
+cd Documents/Github/datascience/Agentic_AI/AutoGen
+
+
+touch reqs.yml
+
+
+nano reqs.yml
+
+
+name: ai_agents
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - autogen-agentchat~=0.2
+
+
+conda env create -f reqs.yml
+
+
+conda activate ai_agents
+
+touch .env 
+
+Add Azure OpenAI endpoint info
+
+nano .env
+
+
+
+
+
+

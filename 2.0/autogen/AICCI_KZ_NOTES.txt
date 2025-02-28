@@ -1,0 +1,212 @@
+Notes:
+
+Each action (A, B, and C) to trigger a specific function (main_A(), main_B(), main_C()) that works independently, we can structure the code as follows:
+
+Each function will represent the logic for a specific action, and you'll simulate an API call based on that action. These functions will handle their respective actions (like guidelines, locations, or issue_questions) and interact with the database directly.
+
+Updated Script with Specific Functions for Each Action:
+Here’s how you can structure your script:
+
+simulate_api.py (with specific functions for each action)
+
+import psycopg2
+import json
+
+# Database connection function
+def get_db_connection():
+    """Establish a connection to the PostgreSQL database."""
+    conn = psycopg2.connect(
+        dbname="flask_api_db",  # Update with your database name
+        user="postgres",  # Update with your username
+        password="test_password",  # Update with your password
+        host="localhost",
+        port="5433"  # Default PostgreSQL port (change if needed)
+    )
+    return conn
+
+# Function to simulate an API request
+def make_request(url, client_key):
+    """Simulate making an API request and processing the response from the database."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Query to simulate getting data based on the url and client_key
+    query = "SELECT response_data FROM locations WHERE url = %s AND client_key = %s;"
+    cur.execute(query, (url, client_key))
+
+    result = cur.fetchone()
+
+    if result:
+        # If data is found, print and return it in a structured format
+        response_data = result[0]
+        print(f"Response from {url}: {json.dumps(response_data, indent=2)}")
+        return response_data
+    else:
+        # If no data is found, return a 404-like response and log the action
+        print(f"No data found for URL: {url}")
+        error_data = {"error": "Not Found"}
+        return error_data
+
+    # Close the cursor and connection to avoid memory leaks
+    cur.close()
+    conn.close()
+
+# Function to store requests and responses in the database
+def store_request_response(url, client_key, response_data):
+    """Simulate storing the request and response in the database."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Assuming you have a table that logs requests and responses
+    insert_query = """
+        INSERT INTO request_log (url, client_key, response_data)
+        VALUES (%s, %s, %s);
+    """
+    cur.execute(insert_query, (url, client_key, json.dumps(response_data)))
+
+    conn.commit()  # Commit the transaction
+    cur.close()
+    conn.close()
+
+# Functions for each action
+def main_A(url, client_key):
+    """Handles action A (e.g., guidelines)."""
+    print("Processing action A...")
+    # Simulate getting and storing response for action A
+    response_data = make_request(url, client_key)
+    store_request_response(url, client_key, response_data)
+    return response_data
+
+def main_B(url, client_key):
+    """Handles action B (e.g., locations)."""
+    print("Processing action B...")
+    # Simulate getting and storing response for action B
+    response_data = make_request(url, client_key)
+    store_request_response(url, client_key, response_data)
+    return response_data
+
+def main_C(url, client_key):
+    """Handles action C (e.g., issue questions)."""
+    print("Processing action C...")
+    # Simulate getting and storing response for action C
+    response_data = make_request(url, client_key)
+    store_request_response(url, client_key, response_data)
+    return response_data
+
+# Function to simulate processing of an action
+def process_action(action, url, client_key):
+    """Process the action based on the given action string."""
+    if action == 'A':
+        return main_A(url, client_key)
+    elif action == 'B':
+        return main_B(url, client_key)
+    elif action == 'C':
+        return main_C(url, client_key)
+    else:
+        print(f"Invalid action: {action}")
+        return {"error": "Invalid action"}
+
+# Example usage of the functions for modeling purposes
+if __name__ == '__main__':
+    actions = ['A', 'B', 'C', 'D']  # Include an invalid action to test
+    test_url = "https://api.example.com/data"
+    test_client_key = "client1234"
+
+    for action in actions:
+        print(f"Processing action: {action}")
+        result = process_action(action, test_url, test_client_key)
+        print(f"Result: {json.dumps(result, indent=2)}\n")
+
+
+Dedicated Functions for Each Action:
+
+main_A() handles the logic for action 'A'.
+main_B() handles the logic for action 'B'.
+main_C() handles the logic for action 'C'.
+These functions are now separate, which helps keep the code modular and clear. Each function can be independently modified to handle specific tasks related to that action.
+
+process_action():
+
+This function receives an action string (e.g., 'A', 'B', 'C') and calls the corresponding main function (main_A(), main_B(), or main_C()). It acts as the controller, delegating the action to the appropriate function.
+Modular Workflow:
+
+Each action (A, B, or C) has its own function that handles database queries, stores responses, and processes data independently.
+How It Works:
+main_A(): Processes action 'A' (e.g., fetches guidelines data from the database).
+main_B(): Processes action 'B' (e.g., fetches locations data from the database).
+main_C(): Processes action 'C' (e.g., fetches issue questions data from the database).
+Each of these functions interacts with the database via the make_request() function and logs the request and response in the request_log table via store_request_response().
+
+Example Output:
+If you run the script with different actions, you'll see the following kind of output:
+
+Processing action: A
+Response from https://api.example.com/data: {
+    "response_data": "Some guidelines data"
+}
+Result: {
+    "response_data": "Some guidelines data"
+}
+
+Processing action: B
+Response from https://api.example.com/data: {
+    "response_data": "Some locations data"
+}
+Result: {
+    "response_data": "Some locations data"
+}
+
+Processing action: C
+Response from https://api.example.com/data: {
+    "response_data": "Some issue questions data"
+}
+Result: {
+    "response_data": "Some issue questions data"
+}
+
+Processing action: D
+Invalid action: D
+Result: {
+    "error": "Invalid action"
+}
+
+Example Database Tables:
+You can use the following SQL statements to create the necessary tables:
+
+sql
+Copy code
+-- Create the 'locations' table
+CREATE TABLE locations (
+    id SERIAL PRIMARY KEY,
+    url TEXT NOT NULL,
+    client_key TEXT NOT NULL,
+    response_data JSONB
+);
+
+-- Create the 'request_log' table (for logging requests and responses)
+CREATE TABLE request_log (
+    id SERIAL PRIMARY KEY,
+    url TEXT NOT NULL,
+    client_key TEXT NOT NULL,
+    response_data JSONB
+);
+
+Final Notes:
+Statelessness: Each action is processed independently, ensuring that the state is not shared across requests. The database acts as the source of truth, and each action operates based on fresh data.
+Modularity: This approach is modular because each action (A, B, C) has its own function. If you need to add or modify actions, you can do so by editing the respective function.
+Error Handling: The script includes error handling for invalid actions, and it provides informative feedback in case something goes wrong.
+
+Next Steps for containarization:
+Once we are comfortable with this local modeling approach, you can move to Flask or any other web framework to expose these actions as API endpoints for production purposes.
+
+Design to process an "action A", send relevant data to a WebSocket service, log the response, and return the response. The function is asynchronous, meaning it won't block the execution of other code while waiting for the WebSocket response.
+
+async def main_A(url, client_key):
+    """Handles action A (e.g., guidelines)."""
+    print("Processing action A...")
+    
+    action_data = {"action": "A", "url": url, "client_key": client_key}
+    response_data = await communicate_with_websocket(action_data)  # Communicate with the WebSocket service
+    
+    store_request_response(url, client_key, response_data)  # Log the response in the DB
+    return response_data
