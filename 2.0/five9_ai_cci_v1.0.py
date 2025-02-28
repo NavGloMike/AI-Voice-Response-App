@@ -398,12 +398,37 @@ def second_initiate_report_chat(transcription_text, second_manager, user_agent):
 
 ########################################################################################################
 
+dnis = ""
+client_name = ""
 
-def main():
+@ app.route("/interaction", methods=["GET"])
+def interaction():
+    json = request.get_json()
+
+    if json is None:
+            return jsonify({"error": "Invalid JSON"}), 400
+    
+    # read the dnis and clientName from the request
+    dnis = json.get("dnis")
+    client_name = json.get("clientName")
+
+    if dnis is not None and client_name is not None:
+        # fetch the greeting and send back to Five9
+        
+    else:
+        # pass the json to the process
+        main(json)
+    
+
+
+def main(json=None):
 
     
     # Step 1:
-    transcription_text = collect_transcription_data()
+    if json is not None:
+        transcription_text = convert_json_to_code(json)
+    else:
+       transcription_text = collect_transcription_data()
     
     # Step 2:
     initial_chat_result = initiate_report_chat(transcription_text, manager, user_agent)
